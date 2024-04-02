@@ -1,73 +1,112 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
+#include <time.h> 
+#include <stdint.h> 
 
-extern void stencil_kernel_asm(float* X, float* Y, int n); // External declaration for assembly version
+// Assembly function declaration
+extern double stencil_kernel_asm(double* X, double* Y, int size);
 
-#define N 1000000 // Maximum length of the vector
+// Function declarations
+void init_X(double* X, int size);
+void stencil_kernel_c(double* X, double* Y, int size);
 
-// C version of the stencil kernel
-void stencil_kernel_c(float* X, float* Y, int n) {
-    for (int i = 3; i < n - 3; ++i) {
-        Y[i] = X[i - 3] + X[i - 2] + X[i - 1] + X[i] + X[i + 1] + X[i + 2] + X[i + 3];
+
+void init_X(double* X, int size) {
+    // For intitializing Random Number Generator
+    srand(time(NULL));
+
+    // Fill X vector at random
+    for (int i = 0; i < size; i++) {
+        X[i] = (double)rand();
+    }
+}
+
+void stencil_kernel_c(double* X, double* Y, int size) {
+    // Process the array using C
+    int n = size - 1;
+    int i;
+    int count = 0;
+    for (i = 3; i <= n; i++) {
+
+        if (i - 3 < 0 || i + 3 >= size) {
+            break;
+        }
+        else {
+            Y[count] = X[i - 3] + X[i - 2] + X[i - 1] + X[i] + X[i + 1] + X[i + 2] + X[i + 3];
+            count++;
+        }
+
+
     }
 }
 
 int main() {
-    int n_values[] = { 1 << 20, 1 << 24, 1 << 30 }; // Vector sizes
-    clock_t start, end;
+    int size;
 
-    for (int i = 0; i < 3; ++i) {
-        int n = n_values[i];
-        float* X = (float*)malloc(n * sizeof(float));
-        float* Y = (float*)malloc(n * sizeof(float));
+    printf("Please enter the size of the array: ");
+    scanf_s(" %d", &size);
+    for (int m = 0; m < 30; m++) {
+        double* X = malloc(size * sizeof(double));
+        int Y_size = size - 6;
+        double* Assembly_Yout = malloc(Y_size * sizeof(double));
+        double* C_Yout = malloc(Y_size * sizeof(double));
 
-        if (X == NULL || Y == NULL) {
-            fprintf(stderr, "Failed to allocate memory for X or Y\n");
-            return 1; // Or handle the error appropriately
-        }
+        // Fill X with random numbers
 
-        // Initialize vector X with some values
-        for (int j = 0; j < n; ++j) {
-            X[j] = (float)(j + 1);
-        }
+        init_X(X, size);
 
-        // Time the C version of the kernel
-        start = clock();
-        stencil_kernel_c(X, Y, n); // Call the C version
-        end = clock();
-
-        // Display the first ten elements of vector Y for the C version
-        printf("C Version (n = %d): ", n);
-        for (int j = 0; j < 10; ++j) {
-            printf("%.2f ", Y[j]);
+        // Print X for debugging
+        printf("X array:\n");
+        for (int i = 0; i < 10; i++) {
+            printf("%lf ", X[i]);
         }
         printf("\n");
 
-        // Display the time taken by the C version
-        printf("Time taken by C version: %.6f seconds\n", (double)(end - start) / CLOCKS_PER_SEC);
 
-        
-        // Time the assembly version of the kernel
-        start = clock();
-        stencil_kernel_asm(X, Y, n); // Call the assembly version
-        end = clock();
+        // C function
 
-        // Display the first ten elements of vector Y for the assembly version
-        printf("Assembly Version (n = %d): ", n);
-        for (int j = 0; j < 10; ++j) {
-            printf("%.2f ", Y[j]);
+        clock_t t;
+        t = clock();
+        for (int i = 0; i < 100; i++) {
+            stencil_kernel_c(X, C_Yout, size);
+        }
+        t = clock() - t;
+        double c_time_taken = ((double)t) / CLOCKS_PER_SEC;
+
+        printf("ACHIEVED C TIME: %lf sec\n", c_time_taken);
+
+        // Print the result from the C function
+        printf("Results from C function:\n");
+        for (int i = 0; i < 10; i++) {
+            printf("%lf\n", C_Yout[i]);
         }
         printf("\n");
 
-        // Display the time taken by the assembly version
-        printf("Time taken by assembly version: %.6f seconds\n", (double)(end - start) / CLOCKS_PER_SEC);
-        
 
+        // Assembly Function
+
+        clock_t a;
+        a = clock();
+        for (int i = 0; i < 100; i++) {
+            stencil_kernel_asm(X, Assembly_Yout, Y_size);
+        }
+        a = clock() - a;
+        double a_time_taken = ((double)a) / CLOCKS_PER_SEC;
+        printf("ACHIEVED ASSEMBLY TIME: %Lf sec\n", a_time_taken);
+
+        // Print the result from the assembly function
+        printf("Result from Assembly function:\n");
+        for (int i = 0; i < 10; i++) {
+            printf("%lf\n", Assembly_Yout[i]);
+        }
+        printf("\n");
+
+        // Free allocated memory
         free(X);
-        free(Y);
+        free(C_Yout);
+        free(Assembly_Yout);
     }
-
     return 0;
 }
+
 
