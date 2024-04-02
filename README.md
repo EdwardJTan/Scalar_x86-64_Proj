@@ -17,19 +17,8 @@ Provide comparative execution times and a short analysis of the performance of t
 
 ## Screenshots
 
-### C Program Output with Correctness Check
+### C Program and x86-64 Output with Correctness Check
 
 ![Program Output](PROGRAM_OUTPUT_DEBUG.png)
 
-
-### x86-64 Program Output with Correctness Check
-
-![x86-64 Program Output](path/to/correctness_check_x86-64.png)
-
-Include a screenshot of the program output with the correctness check for the x86-64 program.
-
-
-## License
-
-Information about the project's license.
 
