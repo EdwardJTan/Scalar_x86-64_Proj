@@ -1,34 +1,52 @@
+section .data
+X dq 2.0
+
 section .text
 bits 64
 Default rel
 global stencil_kernel_asm
 
+
 stencil_kernel_asm:
-    mov     rsi, rdi        ; Copy the address of X to RSI
-    mov     rdx, rcx        ; Copy the address of Y to RDX
-    mov     rcx, rsi        ; Copy the address of X to RCX for loop control
-    add     rcx, 3 * 4      ; Move the pointer to X[3]
+    mov r10, rax      
+    mov r9, rax     
 
-loop_start:
-    movss   xmm0, [rcx-3 * 4 * 4] ; Load X[i-3] to XMM0
-    movss   xmm1, [rcx-2 * 4 * 4] ; Load X[i-2] to XMM1
-    movss   xmm2, [rcx-1 * 4 * 4] ; Load X[i-1] to XMM2
-    movss   xmm3, [rcx]           ; Load X[i] to XMM3
-    movss   xmm4, [rcx+1 * 4 * 4] ; Load X[i+1] to XMM4
-    movss   xmm5, [rcx+2 * 4 * 4] ; Load X[i+2] to XMM5
-    movss   xmm6, [rcx+3 * 4 * 4] ; Load X[i+3] to XMM6
-    addss   xmm3, xmm2            ; X[i] + X[i-1]
-    addss   xmm3, xmm1            ; X[i] + X[i-1] + X[i-2]
-    addss   xmm3, xmm0            ; X[i] + X[i-1] + X[i-2] + X[i-3]
-    addss   xmm3, xmm4            ; X[i] + X[i-1] + X[i-2] + X[i-3] + X[i+1]
-    addss   xmm3, xmm5            ; X[i] + X[i-1] + X[i-2] + X[i-3] + X[i+1] + X[i+2]
-    addss   xmm3, xmm6            ; X[i] + X[i-1] + X[i-2] + X[i-3] + X[i+1] + X[i+2] + X[i+3]
-    movss   [rdx], xmm3           ; Store the result in Y[i]
+loop:
+    
+    cmp r9, r8
+    ja end          
 
-    add     rcx, 4                ; Move to the next element of X
-    add     rdx, 4                ; Move to the next element of Y
-    cmp     rcx, rsi              ; Compare the current pointer with the end pointer of X
-    jne     loop_start            ; Jump to loop_start if not at the end
+    xorps xmm0, xmm0   ; Reset xmm0 to 0
+    movsd xmm1, [rcx + r10 * 8 - 8] ; Load num[i - 3] to xmm1
+    movsd xmm2, [rcx + r10 * 8]     ; Load num[i - 2] to xmm2
+    movsd xmm3, [rcx + r10 * 8 + 8] ; Load num[i - 1] to xmm3
+    movsd xmm4, [rcx + r10 * 8 + 16]; Load num[i] to xmm4
+    movsd xmm5, [rcx + r10 * 8 + 24]; Load num[i + 1] to xmm5
+    movsd xmm6, [rcx + r10 * 8 + 32]; Load num[i + 2] to xmm6
+    movsd xmm7, [rcx + r10 * 8 + 40]; Load num[i + 3] to xmm7
+    
+    
 
+    ; Accumulate sum
+    addsd xmm0, xmm1   ; xmm0 = xmm0 + xmm1
+    addsd xmm0, xmm2   ; xmm0 = xmm0 + xmm2
+    addsd xmm0, xmm3   ; xmm0 = xmm0 + xmm3
+    addsd xmm0, xmm4   ; xmm0 = xmm0 + xmm4
+    addsd xmm0, xmm5   ; xmm0 = xmm0 + xmm5
+    addsd xmm0, xmm6   ; xmm0 = xmm0 + xmm6
+    addsd xmm0, xmm7   ; xmm0 = xmm0 + xmm7
+    
+    ; Store result back to memory
+    ;movsd [rdx + r9 * 8 - 8], 32
 
-    ret
+    movsd [rdx + r9 * 8 - 8], xmm0  
+
+    ; Increment loop counters
+              
+    inc r10            ; Increment index for storing result
+    inc r9          ; Increment loop counter
+    
+    jmp loop           ; Repeat loop
+
+end:
+    ret                ; Return
