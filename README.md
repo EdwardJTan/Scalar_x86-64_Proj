@@ -1,8 +1,6 @@
 # Tan, Edward James E
 ## S11 - LBYARCH
 
-Brief overview of your project.
-
 ## Comparative Execution Time and Performance Analysis
 
 ### Debug Mode (C and x86-64)
