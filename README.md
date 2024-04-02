@@ -5,9 +5,10 @@
 
 ### Debug Mode (C and x86-64)
 
-Across all tests, the x86-64 assembly version of the program performed far more efficiently than the C program by a large margin. The averages of the 2^20 cases are as follows:
+Across all tests, the x86-64 assembly version of the program performed far more efficiently than the C program by a large margin. The averages of the different vector sizes 
+are as follows:
 
-![here](2_20_average.png) ![here](2_24_average.png)
+![here](2_20_average.png) ![here](2_24_average.png) 
 
 
 ### Release Mode (C and x86-64)
@@ -28,13 +29,6 @@ Include a screenshot of the program output with the correctness check for the C 
 
 Include a screenshot of the program output with the correctness check for the x86-64 program.
 
-## Usage
-
-Instructions on how to use your program.
-
-## Contributing
-
-Guidelines for contributing to your project.
 
 ## License
 
